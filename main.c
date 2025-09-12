@@ -29,6 +29,10 @@ int sock = 0;
 int connection = 0;
 char input[IN_LEN];
 char output[OUT_LEN];
+char pw[512];
+char nn[512];
+char un[512];
+char rn[512];
 
 
 void handle_interrupt(int n) {
@@ -55,12 +59,13 @@ void out(char * msg) {
     printf("%s> %s", NICKNAME, msg);
 }
 
-void authenticate(char * password, char * nickname, char * username, char * realname) {
+void authenticate(const char * password, const char * nickname, const char * username, const char * realname) {
     printf("Authenticating\n");
+    printf(password);
     char psw_msg[strlen(password) + 5];
     char nck_msg[strlen(nickname) + 5];
     char usr_msg[strlen(username) + strlen(realname)+ 11];
-
+    printf("S1\n");
     sprintf(
         psw_msg,
         "PASS %s",
@@ -118,12 +123,22 @@ int main(int argc, char const *argv[])
         perror("connection");
         exit(EXIT_FAILURE);
     }
-
+    
+    printf("Please enter your credentials\n");
+    printf("password: ");
+    scanf(" %s", &pw);
+    printf("nickname: ");
+    scanf(" %s", &nn);
+    printf("username: ");
+    scanf(" %s", &un);
+    printf("realname: ");
+    scanf(" %s", &rn);
+    
     authenticate(
-        PASSWORD,
-        NICKNAME,
-        USERNAME,
-        REALNAME
+        pw,
+        nn,
+        un,
+        rn
     );
 
     char code[16];
@@ -139,7 +154,8 @@ int main(int argc, char const *argv[])
         if (loc_png != NULL) {
             sprintf(code, "PONG :%s", loc_png + 6, 16);
             out(code);
+            loc_png = NULL;
+            continue;
         }
-        loc_png = NULL;
     }
 }
