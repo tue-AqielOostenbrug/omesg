@@ -29,10 +29,10 @@ int sock = 0;
 int connection = 0;
 char input[IN_LEN];
 char output[OUT_LEN];
-char pw[512];
-char nn[512];
-char un[512];
-char rn[512];
+char password[512];
+char nickname[512];
+char username[512];
+char realname[512];
 
 
 void handle_interrupt(int n) {
@@ -59,9 +59,19 @@ void out(char * msg) {
     printf("%s> %s", NICKNAME, msg);
 }
 
-void authenticate(const char * password, const char * nickname, const char * username, const char * realname) {
+void authenticate(void) {
     printf("Authenticating\n");
     printf(password);
+    printf("Please enter your credentials\n");
+    printf("password: ");
+    scanf(" %s", &password);
+    printf("nickname: ");
+    scanf(" %s", &nickname);
+    printf("username: ");
+    scanf(" %s", &username);
+    printf("realname: ");
+    scanf(" %s", &realname);
+    
     char psw_msg[strlen(password) + 5];
     char nck_msg[strlen(nickname) + 5];
     char usr_msg[strlen(username) + strlen(realname)+ 11];
@@ -124,22 +134,8 @@ int main(int argc, char const *argv[])
         exit(EXIT_FAILURE);
     }
     
-    printf("Please enter your credentials\n");
-    printf("password: ");
-    scanf(" %s", &pw);
-    printf("nickname: ");
-    scanf(" %s", &nn);
-    printf("username: ");
-    scanf(" %s", &un);
-    printf("realname: ");
-    scanf(" %s", &rn);
-    
-    authenticate(
-        pw,
-        nn,
-        un,
-        rn
-    );
+
+    authenticate();
 
     char code[16];
     char * loc_png;
