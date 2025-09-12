@@ -14,8 +14,7 @@
 #define TYPE SOCK_STREAM // TCP
 #define PROTOCOL 0 // default
 #define PORT 6667 // default
-#define IN_LEN 512 // input length
-#define OUT_LEN 512 // output length
+#define MAX_LEN 512
 #define PASSWORD "none"
 #define NICKNAME "jim"
 #define USERNAME "user0"
@@ -27,12 +26,14 @@ bool interrupted = false;
 struct sockaddr_in addr;
 int sock = 0;
 int connection = 0;
-char input[IN_LEN];
-char output[OUT_LEN];
-char password[512];
-char nickname[512];
-char username[512];
-char realname[512];
+char input[MAX_LEN];
+char output[MAX_LEN];
+char password[MAX_LEN];
+char nickname[MAX_LEN];
+char username[MAX_LEN];
+char realname[MAX_LEN];
+char pong_cmd[16];
+char * val_ping;
 
 
 void handle_interrupt(int n) {
@@ -99,13 +100,7 @@ void authenticate(void) {
     out(usr_msg);
 }
 
-int main(int argc, char const *argv[])
-{
-    printf(TITLE);
-    
-    printf("Set up signal handler\n");
-    signal(SIGINT, handle_interrupt);
-
+void make_connection(void) {
     printf("Initialize socket\n");
     sock = socket(
         DOMAIN,
@@ -133,25 +128,34 @@ int main(int argc, char const *argv[])
         perror("connection");
         exit(EXIT_FAILURE);
     }
+}
+
+void handle_incoming(void) {
+    read(
+        sock,
+        output,
+        MAX_LEN
+    );
+    printf("%s> %s", "server", output);
+    val_ping = strstr(output, "PING :");
+    if (val_ping != NULL) {
+        sprintf(pong_cmd, "PONG :%s", val_ping + 6, 16);
+        out(pong_cmd);
+        val_ping = NULL;
+    }
+}
+
+int main(int argc, char const *argv[])
+{
+    printf(TITLE);
     
-
+    printf("Set up signal handler\n");
+    signal(SIGINT, handle_interrupt);
+    
+    make_connection();
     authenticate();
-
-    char code[16];
-    char * loc_png;
+    
     while(1) {
-        read(
-            sock,
-            output,
-            OUT_LEN
-        );
-        printf("%s> %s", "server", output);
-        loc_png = strstr(output, "PING :");
-        if (loc_png != NULL) {
-            sprintf(code, "PONG :%s", loc_png + 6, 16);
-            out(code);
-            loc_png = NULL;
-            continue;
-        }
+        handle_incoming();
     }
 }
