@@ -103,12 +103,6 @@ int main(int argc, char const *argv[])
         exit(EXIT_FAILURE);
     }
     
-    printf("Configure socket\n");
-    if (setsockopt(sock,SOL_SOCKET, SO_REUSEADDR, &(int){1}, sizeof(int)) == -1) {
-        perror("setsockopt");
-        exit(EXIT_FAILURE);
-    }
-
     addr.sin_family = DOMAIN;
     addr.sin_port = htons(PORT);
     addr.sin_addr.s_addr = inet_addr(ADDR);
@@ -131,7 +125,9 @@ int main(int argc, char const *argv[])
         USERNAME,
         REALNAME
     );
-    char code[20];
+
+    char code[16];
+    char * loc_png;
     while(1) {
         read(
             sock,
@@ -139,12 +135,11 @@ int main(int argc, char const *argv[])
             OUT_LEN
         );
         printf("%s> %s", "server", output);
-        if (strstr(output, "PING :") != NULL) {
-            //strncpy(code, output, 20);
-            printf("MATCH\n");
-            //char png_msg[13];
-            //sprintf(png_msg, "PONG :%s", output);
-            //out(png_msg);
+        loc_png = strstr(output, "PING :");
+        if (loc_png != NULL) {
+            sprintf(code, "PONG :%s", loc_png + 6, 16);
+            out(code);
         }
+        loc_png = NULL;
     }
 }
