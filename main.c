@@ -47,17 +47,19 @@ void handle_interrupt(int n) {
 }
 
 void out(char * msg) {
-    sprintf(
-        msg,
+    char out_msg[strlen(msg) + 2];
+    snprintf(
+        out_msg,
+        strlen(msg) + 2,
         "%s\r\n",
         msg
     );
     write(
         sock,
-        msg,
-        strlen(msg)
+        out_msg,
+        strlen(out_msg)
     );
-    printf("%s> %s", NICKNAME, msg);
+    printf("%s> %s\n", NICKNAME, msg);
 }
 
 void authenticate(void) {
@@ -73,26 +75,28 @@ void authenticate(void) {
     printf("realname: ");
     scanf(" %s", &realname);
     
-    char psw_msg[strlen(password) + 5];
-    char nck_msg[strlen(nickname) + 5];
-    char usr_msg[strlen(username) + strlen(realname)+ 11];
-    printf("S1\n");
-    sprintf(
+    char psw_msg[strlen(password) + 6];
+    char nck_msg[strlen(nickname) + 6];
+    char usr_msg[strlen(username) + strlen(realname)+ 12];
+    snprintf(
         psw_msg,
+        strlen(password) + 6,
         "PASS %s",
         password
     );
     out(psw_msg);
     
-    sprintf(
+    snprintf(
         nck_msg,
+        strlen(nickname) + 6,
         "NICK %s",
         nickname
     );
     out(nck_msg);
 
-    sprintf(
+    snprintf(
         usr_msg,
+        strlen(username) + 12,
         "USER %s 0 * :%s",
         username,
         realname
@@ -139,7 +143,7 @@ void handle_incoming(void) {
     printf("%s> %s", "server", output);
     val_ping = strstr(output, "PING :");
     if (val_ping != NULL) {
-        sprintf(pong_cmd, "PONG :%s", val_ping + 6, 16);
+        snprintf(pong_cmd, 16, "PONG :%s", val_ping + 6);
         out(pong_cmd);
         val_ping = NULL;
     }
