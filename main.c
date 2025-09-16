@@ -96,7 +96,7 @@ void authenticate(void) {
 
     snprintf(
         usr_msg,
-        strlen(username) + 12,
+        strlen(username) + strlen(realname) + 12,
         "USER %s 0 * :%s",
         username,
         realname
@@ -149,6 +149,17 @@ void handle_incoming(void) {
     }
 }
 
+bool check_incoming(void) {
+    return true;
+}
+
+void handle_outgoing(void) {
+    char c[2];
+    printf("Enter outgoing char: ");
+    scanf(" %s", &c);
+    out(c);
+}
+
 int main(int argc, char const *argv[])
 {
     printf(TITLE);
@@ -158,8 +169,13 @@ int main(int argc, char const *argv[])
     
     make_connection();
     authenticate();
-    
+    bool incoming;    
     while(1) {
-        handle_incoming();
+        if (check_incoming()) {
+            handle_incoming();
+            continue;
+        }
+
+        handle_outgoing();
     }
 }
