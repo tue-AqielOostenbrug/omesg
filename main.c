@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <poll.h>
+#include <fcntl.h>
 
 #define TITLE "omsg client\n"
 #define INTERRUPT_MSG "\nCaught interrupt\n"
@@ -34,7 +36,7 @@ char username[MAX_LEN];
 char realname[MAX_LEN];
 char pong_cmd[16];
 char * val_ping;
-
+struct pollfd fds[1];
 
 void handle_interrupt(int n) {
     printf(INTERRUPT_MSG);
@@ -132,6 +134,9 @@ void make_connection(void) {
         perror("connection");
         exit(EXIT_FAILURE);
     }
+    
+    fds[0].fd = sock;
+    fds[0].events = POLLIN;
 }
 
 void handle_incoming(void) {
@@ -150,13 +155,13 @@ void handle_incoming(void) {
 }
 
 bool check_incoming(void) {
-    return true;
+    if (poll(fds, 1, 0) > 0);
 }
 
 void handle_outgoing(void) {
-    char c[2];
+    char c[MAX_LEN];
     printf("Enter outgoing char: ");
-    scanf(" %s", &c);
+    scanf("%s", &c);
     out(c);
 }
 
@@ -166,16 +171,20 @@ int main(int argc, char const *argv[])
     
     printf("Set up signal handler\n");
     signal(SIGINT, handle_interrupt);
-    
     make_connection();
     authenticate();
-    bool incoming;    
+    
     while(1) {
-        if (check_incoming()) {
-            handle_incoming();
+        // Check if new data in feeds
+        if (poll(fds, 1, 0) > 0) {
+            // New incoming data
+            if(fds[0].revents & POLLIN) {
+                handle_incoming();
+            }
+            printf("\t\t\tSKIPPING ITERATION\n\n\n");
             continue;
+        } else {
+            handle_outgoing();
         }
-
-        handle_outgoing();
     }
 }
