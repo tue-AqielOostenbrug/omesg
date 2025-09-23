@@ -12,3 +12,5 @@
 - [C] Prototype ESP32 server
 - [C] Unit test ESP32 server
 - [C] Integrate ESP32 server into Docker testing pipeline
+- [C] Integrate LORA into ESP32 client
+- [C] Integrate LORA into ESP32 server
