@@ -158,8 +158,21 @@ void handle_ping(void) {
     char * ping_val = strstr(output, "PING :");
     if (ping_val != NULL) {
         char pong_cmd[MAX_LEN];
+        ping_val[strlen(ping_val)-1] = '\0';
         snprintf(pong_cmd, MAX_LEN, "PONG :%s", ping_val + 6);
         out(pong_cmd);
+    }
+}
+
+void print_incoming(void) {
+    int i = 0;
+    int j = strcspn(output, "\n");
+    while (i < strlen(output)) {
+        printf("server> %.*s\n", j, output + i);
+        // printf("%d\n", i + j + 2);
+        i += j + 1;
+        j = strcspn(output + i, "\n");
+
     }
 }
 
@@ -169,9 +182,10 @@ void handle_incoming(void) {
         output,
         MAX_LEN
     );
-
-    printf("%s", output);
+    print_incoming();
+    // printf("%s", output);
     handle_ping();
+    memset(output, 0, MAX_LEN);
 }
 
 bool check_feeds(void) {
@@ -194,14 +208,22 @@ void setup_terminal(void) {
 
 int main(int argc, char const *argv[])
 {
+    // printf("Hi\n");
+    // sprintf(output, 
+    //     "First line\r\n"
+    //     "Second line\r\n"
+    //     "Third line\r\n");
+    //
+    // print_incoming();
+    //
     printf(TITLE);
-    
+
     printf("Set up signal handler\n");
     signal(SIGINT, handle_interrupt);
     setup_terminal();
     make_connection();
     authenticate();
-    
+
     while(1) {
         // Check if new data in feeds
         if (check_feeds()) {
