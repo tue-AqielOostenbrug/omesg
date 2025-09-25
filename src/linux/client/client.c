@@ -10,17 +10,17 @@
 #include <poll.h>
 #include <fcntl.h>
 
-#define TITLE "omsg client\n"
+#define TITLE "qmesg linux client\n"
 #define INTERRUPT_MSG "\nCaught interrupt\n"
 #define DOMAIN AF_INET // IPv4
 #define TYPE SOCK_STREAM // TCP
 #define PROTOCOL 0 // default
 #define PORT 6667 // default
-#define MAX_LEN 512
-#define PASSWORD "none"
-#define NICKNAME "jim"
-#define USERNAME "user0"
-#define REALNAME "JIMMY"
+#define MSG_MAX_LEN 512
+#define PASSWORD_MAX_LEN 30
+#define NICKNAME_MAX_LEN 30
+#define USERNAME_MAX_LEN 30
+#define REALNAME_MAX_LEN 30
 #define ADDR "127.0.0.1"
 
 // global variables
@@ -28,12 +28,12 @@ bool interrupted = false;
 struct sockaddr_in addr;
 int sock = 0;
 int connection = 0;
-char input[MAX_LEN];
-char output[MAX_LEN];
-char password[MAX_LEN];
-char nickname[MAX_LEN];
-char username[MAX_LEN];
-char realname[MAX_LEN];
+char input[MSG_MAX_LEN];
+char output[MSG_MAX_LEN];
+char password[PASSWORD_MAX_LEN];
+char nickname[NICKNAME_MAX_LEN];
+char username[USERNAME_MAX_LEN];
+char realname[REALNAME_MAX_LEN];
 struct pollfd fds[2];
 
 void handle_interrupt(int n) {
@@ -59,7 +59,7 @@ void out(char * msg) {
         out_msg,
         strlen(out_msg)
     );
-    printf("%s> %s\n", NICKNAME, msg);
+    printf("%s> %s\n", nickname, msg);
 }
 
 void out_b(char * msg) {
@@ -75,22 +75,25 @@ void out_b(char * msg) {
         out_msg,
         strlen(out_msg)
     );
-    printf("%s> %s", NICKNAME, msg);
+    printf("%s> %s", nickname, msg);
     fflush(stdout);
 }
 
 void authenticate(void) {
     printf("Authenticating\n");
-    printf(password);
     printf("Please enter your credentials\n");
     printf("password: ");
-    scanf(" %s", &password);
+    fgets(password, PASSWORD_MAX_LEN, stdin);
+    password[strcspn(password, "\n")] = 0;
     printf("nickname: ");
-    scanf(" %s", &nickname);
+    fgets(nickname, NICKNAME_MAX_LEN, stdin);
+    nickname[strcspn(nickname, "\n")] = 0;
     printf("username: ");
-    scanf(" %s", &username);
+    fgets(username, USERNAME_MAX_LEN, stdin);
+    username[strcspn(username, "\n")] = 0;
     printf("realname: ");
-    scanf(" %s", &realname);
+    fgets(realname, REALNAME_MAX_LEN, stdin);
+    realname[strcspn(realname, "\n")] = 0;
     
     char psw_msg[strlen(password) + 6];
     char nck_msg[strlen(nickname) + 6];
@@ -157,9 +160,9 @@ void make_connection(void) {
 void handle_ping(void) {
     char * ping_val = strstr(output, "PING :");
     if (ping_val != NULL) {
-        char pong_cmd[MAX_LEN];
+        char pong_cmd[MSG_MAX_LEN];
         ping_val[strlen(ping_val)-1] = '\0';
-        snprintf(pong_cmd, MAX_LEN, "PONG :%s", ping_val + 6);
+        snprintf(pong_cmd, MSG_MAX_LEN, "PONG :%s", ping_val + 6);
         out(pong_cmd);
     }
 }
@@ -180,12 +183,12 @@ void handle_incoming(void) {
     read(
         sock,
         output,
-        MAX_LEN
+        MSG_MAX_LEN
     );
     print_incoming();
     // printf("%s", output);
     handle_ping();
-    memset(output, 0, MAX_LEN);
+    memset(output, 0, MSG_MAX_LEN);
 }
 
 bool check_feeds(void) {
@@ -195,8 +198,8 @@ bool check_feeds(void) {
 }
 
 void handle_outgoing(void) {
-    char msg_out[MAX_LEN];
-    fgets(msg_out, MAX_LEN, stdin);
+    char msg_out[MSG_MAX_LEN];
+    fgets(msg_out, MSG_MAX_LEN, stdin);
     out_b(msg_out);
     // fflush(stdout);
 }
